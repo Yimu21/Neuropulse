@@ -1,0 +1,30 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+    <h1>Bienvenido al Sistema de Monitoreo Neuropulse 🧤🧠</h1>
+
+    <p>
+        Esta plataforma es el centro de análisis del **Guante Inteligente Neuropulse**, 
+        diseñado para el monitoreo fisiológico continuo del usuario.
+    </p>
+
+    <h2>Objetivo del Proyecto:</h2>
+    <p>
+        Neuropulse combina un microcontrolador ESP32 con sensores GSR (Respuesta Galvánica de la Piel) y un sensor de Pulso para capturar:
+    </p>
+    <ul>
+        <li>**Nivel de Estrés (GSR):** Un indicador objetivo de la actividad del sistema nervioso simpático.</li>
+        <li>**Ritmo Cardíaco (BPM):** La frecuencia de los latidos del corazón.</li>
+    </ul>
+
+    <p>
+        Toda la información se transmite vía Wi-Fi para su posterior almacenamiento y análisis detallado en esta interfaz web (Django/Supabase).
+    </p>
+
+    <hr>
+
+    <h3>Cómo Navegar:</h3>
+    <p>
+        Utilice la barra de navegación superior para acceder a los gráficos interactivos, el análisis de correlación y los registros históricos de los usuarios.
+    </p>
+{% endblock content %}

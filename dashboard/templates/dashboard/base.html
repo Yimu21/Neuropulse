@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Neuropulse - Monitoreo Inteligente{% endblock %}</title>
+    <style>
+        /* CSS Básico para el menú */
+        body { font-family: sans-serif; margin: 0; padding-top: 60px; }
+        .navbar {
+            position: fixed; top: 0; width: 100%; background-color: #333; 
+            padding: 10px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar a {
+            color: white; text-decoration: none; padding: 10px 15px;
+            display: inline-block;
+        }
+        .navbar a:hover { background-color: #575757; }
+        .content { padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="{% url 'home' %}">🏠 Neuropulse</a> |
+
+        <a href="{% url 'resultados_gsr' %}">Nivel de Estrés (GSR)</a>
+        <a href="{% url 'resultados_pulso' %}">Ritmo Cardíaco (Pulso)</a>
+        <a href="{% url 'ver_correlacion' %}">Correlación (Ambos)</a>
+        <a href="{% url 'lista_usuarios' %}">Últimos Registros</a>
+        <a href="{% url 'descargar_app' %}">Descargar App</a>
+    </div>
+
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Ignorar la carpeta del entorno virtual
+isa/
+venv/
+.venv/
+
+# Ignorar archivos específicos de Python y Django
+__pycache__/
+*.pyc
+*.log
+
+# Ignorar archivos de bases de datos locales
+db.sqlite3
+
+# Ignorar archivos específicos del sistema operativo/editor
+.vscode/
+.DS_Store
+
+# Ignorar variables de entorno (.env) o claves secretas
+.env
