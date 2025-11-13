@@ -2,36 +2,91 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> 
     <title>{% block title %}Neuropulse - Monitoreo Inteligente{% endblock %}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
     <style>
-        /* CSS Básico para el menú */
-        body { font-family: sans-serif; margin: 0; padding-top: 60px; }
-        .navbar {
-            position: fixed; top: 0; width: 100%; background-color: #333; 
-            padding: 10px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        /* =======================================================
+           1. ESTILOS GENERALES DEL CUERPO (FONDO Y FUENTE BASE)
+           ======================================================= */
+        body { 
+            background-color: #b6cde2; /* CAMBIAR FONDO: Gris muy claro (profesional) */
+            padding-top: 56px; /* Deja espacio fijo para la barra de navegación de Bootstrap */
+            
+            /* --- AJUSTES DE FUENTE GENERALES --- */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana; /* TIPO DE LETRA */
+            color: #050505da; /* COLOR DE TEXTO BASE: Gris oscuro */
         }
-        .navbar a {
-            color: white; text-decoration: none; padding: 10px 15px;
-            display: inline-block;
+        
+        .content { 
+            padding: 20px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
         }
-        .navbar a:hover { background-color: #575757; }
-        .content { padding: 20px; }
+
+        /* =======================================================
+           2. AJUSTES DEL MENÚ (Navbar)
+           ======================================================= */
+        
+        /* Asegura que los enlaces del menú sean BLANCOS para contrastar con el 'bg-dark' */
+        .navbar .nav-link {
+            color: #FFFFFF !important; /* COLOR DE LETRA DEL MENÚ: Blanco puro */
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        /* Efecto al pasar el mouse */
+        .navbar .nav-link:hover {
+            color: #FFC107 !important; /* COLOR HOVER: Amarillo brillante */
+        }
+        
+        /* Estilo para los títulos */
+        h1, h2, h3 {
+            color: #010101; /* COLOR DE TÍTULOS: Negro para destacar */
+        }
+        
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <a href="{% url 'home' %}">🏠 Neuropulse</a> |
-
-        <a href="{% url 'resultados_gsr' %}">Nivel de Estrés (GSR)</a>
-        <a href="{% url 'resultados_pulso' %}">Ritmo Cardíaco (Pulso)</a>
-        <a href="{% url 'ver_correlacion' %}">Correlación (Ambos)</a>
-        <a href="{% url 'lista_usuarios' %}">Últimos Registros</a>
-        <a href="{% url 'descargar_app' %}">Descargar App</a>
-    </div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}">Neuropulse 🧠</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'resultados_gsr' %}">Nivel de Estrés (GSR)</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'resultados_pulso' %}">Ritmo Cardíaco (Pulso)</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'ver_correlacion' %}">Correlación</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'lista_usuarios' %}">Registros Históricos</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="btn btn-warning" href="{% url 'descargar_app' %}">Descargar App</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
     <div class="content">
         {% block content %}
         {% endblock %}
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
