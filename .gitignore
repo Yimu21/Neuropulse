@@ -2,6 +2,7 @@
 isa/
 venv/
 .venv/
+Neuropulse_app/
 
 # Ignorar archivos específicos de Python y Django
 __pycache__/

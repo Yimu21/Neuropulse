@@ -7,30 +7,42 @@ import numpy as np
 import datetime
 import random 
 
-# --- Importaciones de Supabase ---
-from supabase import create_client, Client
-import time
+# --- Nuevas Importaciones para PostgreSQL (psycopg2) ---
+import psycopg2
+from urllib.parse import quote_plus
 import os
-# Asegúrate de tener 'python-dotenv' y 'supabase-py' instalados.
+# Asegúrate de tener 'python-dotenv' y 'psycopg2-binary' instalados.
 
-# 1. Configuración de la conexión a Supabase
-# Se recomienda obtener la URL y KEY desde las variables de entorno de Django (settings.py)
-# Estas variables se cargan gracias al "load_dotenv()" que pusiste en settings.py
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "URL_DE_FALLO")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "KEY_DE_FALLO")
+# 1. Configuración de la conexión (Obteniendo variables de .env)
+HOST = os.environ.get("SUPABASE_HOST")
+DBNAME = os.environ.get("SUPABASE_DBNAME")
+USER = os.environ.get("SUPABASE_USER")
+PASSWORD = os.environ.get("SUPABASE_PASSWORD")
+PORT = os.environ.get("SUPABASE_PORT", "5432")
 
-# Inicializar cliente de Supabase (se puede hacer una sola vez en un módulo de servicio si el proyecto crece)
-# Manejo de fallos en caso de que las variables no estén cargadas
-supabase = None
-if SUPABASE_URL != "URL_DE_FALLO" and SUPABASE_KEY != "KEY_DE_FALLO":
+# Verificar si las credenciales básicas están presentes
+DB_CREDENTIALS_OK = all([HOST, DBNAME, USER, PASSWORD])
+
+# --- Función para crear y obtener la conexión a PostgreSQL ---
+def obtener_conexion():
+    """Crea una conexión a la base de datos PostgreSQL de Supabase."""
+    if not DB_CREDENTIALS_OK:
+        print("ADVERTENCIA: Las variables de entorno de PostgreSQL no están configuradas correctamente.")
+        return None
+
     try:
-        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        conn = psycopg2.connect(
+            host=HOST,
+            database=DBNAME,
+            user=USER,
+            password=PASSWORD,
+            port=PORT,
+            connect_timeout=5 # Tiempo de espera para la conexión
+        )
+        return conn
     except Exception as e:
-        # En un entorno de producción, esto debería ser un logger, no un print.
-        print(f"Error al inicializar Supabase: {e}")
-else:
-    print("ADVERTENCIA: Variables de entorno de Supabase no cargadas correctamente.")
-# ------------------------------------
+        print(f"Error al conectar con PostgreSQL (Supabase): {e}")
+        return None
 
 # Definimos el intervalo de actualización en milisegundos (20 segundos)
 REFRESH_INTERVAL_MS = 20000 
@@ -72,41 +84,42 @@ def crear_grafico_lineas_tiempo(df, y_columna, titulo, y_titulo, color_linea):
 # --- Función Auxiliar para OBTENER DATOS REALES/SIMULADOS ---
 def obtener_datos_de_supabase(user_id=1): # user_id debería ser dinámico basado en la sesión
     """
-    Intenta obtener los datos fisiológicos de la tabla 'registros' en Supabase.
-    Si falla la conexión, retorna datos simulados (fallback).
+    Intenta obtener los datos fisiológicos de la tabla 'registros' en Supabase usando psycopg2.
+    Si falla la conexión o la consulta, retorna datos simulados (fallback).
     """
-    global supabase
+    conn = obtener_conexion()
     
-    if supabase:
+    if conn:
         try:
-            # Reemplaza 'registros_fisiologicos' con el nombre de tu tabla en Supabase
-            # Filtra por user_id (asumiendo que tienes una columna 'usuario_id' en Supabase)
-            # Ordena por timestamp de forma descendente y limita a los últimos 50 registros.
-            # NOTA: Supabase usa el nombre de tabla que creaste, por ejemplo: 'registro_fisiologico'
-            # Aquí se usa un nombre genérico: 'registros_fisiologicos'
-            response = supabase.table('registros_fisiologicos').select("timestamp, valor_gsr, valor_bpm").eq('usuario_id', user_id).order('timestamp', desc=True).limit(50).execute()
+            # Consulta SQL para obtener los últimos 50 registros del usuario
+            # **ADVERTENCIA**: Asegúrate de que el nombre de la tabla ('registros_fisiologicos') 
+            # y la columna ('usuario_id') coincidan con tu esquema de Supabase.
+            sql_query = """
+                SELECT timestamp, valor_gsr, valor_bpm
+                FROM registros_fisiologicos
+                WHERE usuario_id = %s
+                ORDER BY timestamp DESC
+                LIMIT 50;
+            """
             
-            data = response.data
+            df = pd.read_sql(sql_query, conn, params=[user_id])
             
-            if data:
-                # Convertir la lista de diccionarios de Supabase a DataFrame de Pandas
-                df = pd.DataFrame(data)
-                
-                # Asegurar que la columna 'timestamp' sea de tipo datetime
+            if not df.empty:
+                # Asegurar que la columna 'timestamp' sea de tipo datetime y ordenar ascendente
                 df['timestamp'] = pd.to_datetime(df['timestamp'])
-                
-                # Ordenar por timestamp de forma ascendente para la visualización del gráfico
                 df = df.sort_values(by='timestamp', ascending=True)
                 return df
             
         except Exception as e:
-            print(f"Error al obtener datos de Supabase: {e}")
-            print("Usando datos simulados como fallback.")
+            print(f"Error al ejecutar la consulta SQL: {e}")
+        finally:
+            if conn:
+                conn.close()
     
     # --- FALLBACK: Generación de datos simulados si la conexión falla o no hay datos ---
     N = 50
     base_time = datetime.datetime.now()
-    timestamps = [base_time - datetime.timedelta(seconds=5 * i) for i in range(N)]
+    timestamps = [base_time - datetime.timedelta(seconds=20 * i) for i in range(N)] # Ajustado a 20s
     gsr_base = np.linspace(30, 70, N)
     gsr_data = (gsr_base + np.random.normal(0, 5, N)).astype(int).tolist()
     bpm_base = np.linspace(75, 85, N)
@@ -129,7 +142,7 @@ def home(request):
 def resultados_gsr(request):
     """Muestra el gráfico y datos de GSR (Estrés) en tiempo real, obtenidos de Supabase."""
     
-    # 1. Obtener datos (ahora con conexión a Supabase)
+    # 1. Obtener datos (ahora con conexión a Supabase/psycopg2)
     # En un proyecto real, obtendrías el ID del usuario actual: user_id = request.user.id
     df = obtener_datos_de_supabase(user_id=1) 
     
@@ -147,14 +160,14 @@ def resultados_gsr(request):
         'gsr_graph': gsr_graph_html,
         'gsr_promedio': df['valor_gsr'].mean().round(2),
         'gsr_maximo': df['valor_gsr'].max(),
-        'refresh_interval': REFRESH_INTERVAL_MS, # Nuevo: Intervalo de actualización
+        'refresh_interval': REFRESH_INTERVAL_MS, # Intervalo de actualización (20 segundos)
     }
     return render(request, 'dashboard/resultados_gsr.html', context)
 
 def resultados_pulso(request):
     """Muestra el gráfico y datos del Pulso (Frecuencia Cardíaca), obtenidos de Supabase."""
     
-    # 1. Obtener datos (ahora con conexión a Supabase)
+    # 1. Obtener datos (ahora con conexión a Supabase/psycopg2)
     df = obtener_datos_de_supabase(user_id=1)
     
     # 2. Generar Gráfico Plotly para BPM
@@ -171,7 +184,7 @@ def resultados_pulso(request):
         'bpm_graph': bpm_graph_html,
         'bpm_promedio': df['valor_bpm'].mean().round(2),
         'bpm_maximo': df['valor_bpm'].max(),
-        'refresh_interval': REFRESH_INTERVAL_MS, # Nuevo: Intervalo de actualización
+        'refresh_interval': REFRESH_INTERVAL_MS, # Intervalo de actualización (20 segundos)
     }
     return render(request, 'dashboard/resultados_pulso.html', context)
 
