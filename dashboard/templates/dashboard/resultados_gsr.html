@@ -1,9 +1,70 @@
 {% extends "dashboard/base.html" %}
 
 {% block content %}
-    <h1>Análisis de Nivel de Estrés (GSR)</h1>
-    <p>Aquí se cargará el gráfico de conductancia de la piel con Plotly y los datos analizados por Pandas.</p>
-    {% endblock content %}
+   
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1 class="mb-4">Análisis de Nivel de Estrés (GSR)</h1>
+            <p class="lead">Visualización de la conductancia de la piel en tiempo real y tendencias históricas.</p>
+        </div>
+    </div>
 
+    <!-- Indicadores Clave -->
+    <div class="row mb-5 text-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">GSR Promedio Reciente</h5>
+                    <p class="card-text fs-2 fw-bold">{{ gsr_promedio }}</p>
+                    <small class="text-muted">Valor promedio del último período registrado.</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body">
+                    <h5 class="card-title text-danger">Pico Máximo de Estrés</h5>
+                    <p class="card-text fs-2 fw-bold">{{ gsr_maximo }}</p>
+                    <small class="text-muted">El nivel de GSR más alto detectado recientemente.</small>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Contenedor del Gráfico de Plotly -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body p-1">
+                    <!-- Plotly se inserta aquí. Es crucial usar 'safe' para permitir el HTML de Plotly -->
+                    {{ gsr_graph|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
     
+    <p class="mt-4 text-center text-muted"><small>El gráfico es interactivo. Utiliza el ratón para hacer zoom, moverte y ver los detalles de cada punto.</small></p>
+
+</div>
+
+{{ refresh_interval|json_script:"refresh-interval" }}
+
+<script>
+    // Obtener intervalo seguro desde json_script (milisegundos)
+    let interval = 0;
+    try {
+        const raw = document.getElementById('refresh-interval');
+        if (raw) {
+            interval = JSON.parse(raw.textContent) || 0;
+        }
+    } catch (e) {
+        console.error('No se pudo parsear refresh_interval:', e);
+        interval = 0;
+    }
+    if (interval > 0) {
+        setTimeout(function() { window.location.reload(); }, interval);
+        console.log(`Página configurada para recargar cada ${interval / 1000} segundos.`);
+    }
+</script>
+{% endblock content %} 

@@ -1,6 +1,41 @@
 {% extends "dashboard/base.html" %}
 
 {% block content %}
-    <h1>Análisis de Nivel de Estrés (GSR)</h1>
-    <p>Aquí se cargará el gráfico de conductancia de la piel con Plotly y los datos analizados por Pandas.</p>
-    {% endblock content %}
+       
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1 class="mb-4">Análisis de Correlación (GSR vs. Pulso)</h1>
+            <p class="lead">Muestra la relación directa entre el nivel de estrés y la frecuencia cardíaca.</p>
+        </div>
+    </div>
+
+    <!-- Indicador de Correlación -->
+    <div class="row mb-5 text-center">
+        <div class="col-12">
+            <div class="card shadow-sm border-info">
+                <div class="card-body">
+                    <h5 class="card-title text-info">Coeficiente de Correlación (r)</h5>
+                    <p class="card-text fs-1 fw-bold">{{ correlacion_valor }}</p>
+                    <small class="text-muted">Un valor cercano a 1 indica una correlación fuerte positiva (más estrés = más pulso).</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor del Gráfico de Plotly (Scatter Plot) -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body p-1">
+                    <!-- Plotly se inserta aquí. Es crucial usar 'safe' para permitir el HTML de Plotly -->
+                    {{ correlation_graph|safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <p class="mt-4 text-center text-muted"><small>Cada punto representa una medición. El color indica el momento en que se tomó el dato (más oscuro, más reciente).</small></p>
+
+</div>
+{% endblock content %}
