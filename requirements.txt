@@ -21,3 +21,6 @@ django-crispy-forms==2.5
 crispy-bootstrap5==0.6
 
 #Corrección ortográfica
+#para subir a supabase 
+whitenoise
+gunicorn
