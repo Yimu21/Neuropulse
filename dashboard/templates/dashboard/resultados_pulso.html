@@ -1,69 +1,134 @@
 {% extends "dashboard/base.html" %}
-
+{% load static %}
 {% block content %}
-      
+
 <div class="container my-5">
-    <div class="row">
-        <div class="col-12 text-center">
-            <h1 class="mb-4">Análisis de Ritmo Cardíaco (BPM)</h1>
-            <p class="lead">Visualización de la Frecuencia Cardíaca en tiempo real y tendencias históricas.</p>
+    <h1 class="text-center mb-4">Monitor Cardíaco en Tiempo Real</h1>
+
+    <!-- BLOQUE DEL CORAZÓN -->
+    <div class="text-center mb-4">
+
+        <div style="position: relative; display: inline-block;">
+            
+            <!-- Imagen del corazón -->
+            <img src="{% static 'dashboard/cora.gif' %}" 
+                 alt="corazón" 
+                 style="width: 120px;">
+
+            <!-- Número encima -->
+            <span id="bpm-actual"
+                  style="
+                      position: absolute;
+                      top: 50%;
+                      left: 50%;
+                      transform: translate(-50%, -55%);
+                      font-size: 48px;
+                      font-weight: bold;
+                      color: black;
+                      text-shadow: 0 0 8px white;
+                  ">
+                --
+            </span>
         </div>
+
+        <!-- Texto BPM debajo -->
+        <div style="font-size: 1.8rem; color: black; margin-top: 8px;">
+            BPM
+        </div>
+
     </div>
 
-    <!-- Indicadores Clave -->
-    <div class="row mb-5 text-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-success">
-                <div class="card-body">
-                    <h5 class="card-title text-success">BPM Promedio Reciente</h5>
-                    <p class="card-text fs-2 fw-bold">{{ bpm_promedio }}</p>
-                    <small class="text-muted">Latidos por minuto promedio del último período.</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm border-warning">
-                <div class="card-body">
-                    <h5 class="card-title text-warning">Pico Máximo de BPM</h5>
-                    <p class="card-text fs-2 fw-bold">{{ bpm_maximo }}</p>
-                    <small class="text-muted">Frecuencia cardíaca máxima detectada recientemente.</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Contenedor del Gráfico de Plotly -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-body p-1">
-                    <!-- Plotly se inserta aquí. Es crucial usar 'safe' para permitir el HTML de Plotly -->
-                    {{ bpm_graph|safe }}
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <p class="mt-4 text-center text-muted"><small>El gráfico es interactivo. Utiliza el ratón para hacer zoom, moverte y ver los detalles de cada punto.</small></p>
-
+    <!-- AQUI VA LA GRAFICA -->
+    <canvas id="ecgCanvas" width="900" height="360"
+            style="background:black; width:100%; border:1px solid #333; position:relative;">
+    </canvas>
 </div>
-{{ refresh_interval|json_script:"refresh-interval" }}
 
+<!-- SCRIPT ECG -->
 <script>
-    // Obtener intervalo seguro desde json_script (milisegundos)
-    let interval = 0;
-    try {
-        const raw = document.getElementById('refresh-interval');
-        if (raw) {
-            interval = JSON.parse(raw.textContent) || 0;
-        }
-    } catch (e) {
-        console.error('No se pudo parsear refresh_interval:', e);
-        interval = 0;
+let bpmActual = 70;
+let refreshInterval = 2000;
+
+const canvas = document.getElementById("ecgCanvas");
+const ctx = canvas.getContext("2d");
+
+let x = 0;
+let baseline = canvas.height * 0.60;  // centrado
+
+// Amplitud aumentada estilo monitor
+const AMP = 3.2;
+
+// Imagen de cuadrícula en la esquina superior izquierda
+const gridImg = new Image();
+gridImg.src = "{% static 'dashboard/grid.png' %}";  // <-- PON AQUÍ TU IMAGEN
+let gridLoaded = false;
+gridImg.onload = () => gridLoaded = true;
+
+
+// Forma ECG
+function ecgWave(t) {
+
+    if (t > 0.10 && t < 0.18) return AMP * (-10 * Math.sin((t - 0.10) * Math.PI / 0.08));
+    if (t > 0.20 && t < 0.21) return AMP * (+15);
+    if (t > 0.21 && t < 0.22) return AMP * (-55);
+    if (t > 0.22 && t < 0.25) return AMP * (+25);
+    if (t > 0.35 && t < 0.55) return AMP * (-18 * Math.sin((t - 0.35) * Math.PI / 0.20));
+
+    return 0;
+}
+
+
+// Dibujo ECG
+function drawECG() {
+
+    // Fondo negro
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Imagen grid en esquina superior izquierda (como pediste)
+    if (gridLoaded) {
+        ctx.drawImage(gridImg, 0, 0, 180, 120);
     }
-    if (interval > 0) {
-        setTimeout(function() { window.location.reload(); }, interval);
-        console.log(`Página configurada para recargar cada ${interval / 1000} segundos.`);
+
+    // Estilo línea ECG
+    ctx.strokeStyle = "#00FFE3";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    for (let i = 0; i < canvas.width; i++) {
+        let t = ((i + x) % 180) / 180; // beatWidth = 180
+        let y = baseline + ecgWave(t);
+
+        if (i === 0) ctx.moveTo(i, y);
+        else ctx.lineTo(i, y);
     }
+
+    ctx.stroke();
+
+    // Movimiento del trazo
+    x += 2.5;
+
+    requestAnimationFrame(drawECG);
+}
+
+
+// Actualizar BPM
+function actualizarBPM() {
+    fetch(window.location.href, {
+        headers: {"X-Requested-With": "XMLHttpRequest"}
+    })
+    .then(r => r.json())
+    .then(data => {
+        bpmActual = data.bpm;
+        document.getElementById("bpm-actual").textContent = bpmActual;
+    });
+}
+
+
+// Inicio
+drawECG();
+actualizarBPM();
+setInterval(actualizarBPM, refreshInterval);
 </script>
-{% endblock content %}
+
+{% endblock %}

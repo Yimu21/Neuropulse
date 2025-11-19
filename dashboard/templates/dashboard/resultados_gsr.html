@@ -1,70 +1,258 @@
-{% extends "dashboard/base.html" %}
+{% extends "dashboard/base.html" %} 
+{% load static %}
 
 {% block content %}
-   
+
 <div class="container my-5">
-    <div class="row">
-        <div class="col-12 text-center">
-            <h1 class="mb-4">Análisis de Nivel de Estrés (GSR)</h1>
-            <p class="lead">Visualización de la conductancia de la piel en tiempo real y tendencias históricas.</p>
-        </div>
+
+    <div class="text-center mb-4">
+        <h1>Monitor de Estrés (GSR)</h1>
+        <p class="lead">Visualización dinámica del nivel de activación.</p>
     </div>
 
-    <!-- Indicadores Clave -->
-    <div class="row mb-5 text-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-primary">
-                <div class="card-body">
-                    <h5 class="card-title text-primary">GSR Promedio Reciente</h5>
-                    <p class="card-text fs-2 fw-bold">{{ gsr_promedio }}</p>
-                    <small class="text-muted">Valor promedio del último período registrado.</small>
-                </div>
-            </div>
+    <!-- ESTADO + GIF -->
+    <div class="text-center mb-5">
+
+        <h2 id="estado-texto" class="fw-bold mb-3">{{ estado }}</h2>
+
+        <img id="estado-gif"
+             src="{% static gif %}"
+             style="width: 180px;"
+             alt="estado emocional">
+
+        <div id="activation-actual"
+             class="mt-3"
+             style="font-size: 1.8rem; font-weight: bold;">
+            Activación: {{ activation_level_actual }}
         </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm border-danger">
-                <div class="card-body">
-                    <h5 class="card-title text-danger">Pico Máximo de Estrés</h5>
-                    <p class="card-text fs-2 fw-bold">{{ gsr_maximo }}</p>
-                    <small class="text-muted">El nivel de GSR más alto detectado recientemente.</small>
-                </div>
-            </div>
+
+        <div id="conductance-actual"
+             style="font-size: 1.2rem; color: #666;">
+            Conductancia actual: {{ conductance_actual }} μS
         </div>
+
     </div>
 
-    <!-- Contenedor del Gráfico de Plotly -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-body p-1">
-                    <!-- Plotly se inserta aquí. Es crucial usar 'safe' para permitir el HTML de Plotly -->
-                    {{ gsr_graph|safe }}
-                </div>
-            </div>
+    <!-- GRAFICA -->
+    <div style="position: relative;">
+        <canvas id="stressCanvas" width="900" height="300"
+                style="background:black; width:100%; border:1px solid #333;">
+        </canvas>
+
+        <!-- TOOLTIP -->
+        <div id="tooltip"
+             style="
+                position:absolute;
+                pointer-events:none;
+                background:rgba(0,0,0,0.8);
+                color:white;
+                padding:6px 10px;
+                border-radius:6px;
+                font-size:14px;
+                display:none;
+                border:1px solid #999;
+             ">
         </div>
     </div>
-    
-    <p class="mt-4 text-center text-muted"><small>El gráfico es interactivo. Utiliza el ratón para hacer zoom, moverte y ver los detalles de cada punto.</small></p>
 
 </div>
 
-{{ refresh_interval|json_script:"refresh-interval" }}
-
 <script>
-    // Obtener intervalo seguro desde json_script (milisegundos)
-    let interval = 0;
-    try {
-        const raw = document.getElementById('refresh-interval');
-        if (raw) {
-            interval = JSON.parse(raw.textContent) || 0;
-        }
-    } catch (e) {
-        console.error('No se pudo parsear refresh_interval:', e);
-        interval = 0;
+// -------------------------------------------
+// CONFIGURACIÓN
+// -------------------------------------------
+let refreshInterval = 2000;
+let pointsPerSecond = 60;
+
+const canvas = document.getElementById("stressCanvas");
+const ctx = canvas.getContext("2d");
+const tooltip = document.getElementById("tooltip");
+
+let dataBuffer = new Array(400).fill(80);
+
+let activation_real = Number("{{ activation_level_actual|default:'80' }}");
+let estado_actual = "{{ estado }}";
+
+// Límites del eje Y
+const Y_MIN = 50;
+const Y_MAX = 120;
+
+// Colores por estado
+function getEstadoColor(estado) {
+    if (estado === "Estresado") return "#FF4040"; // rojo
+    if (estado === "Normal")     return "#FFD700"; // amarillo
+    return "#00FF6A";            // verde
+}
+
+// -------------------------------------------
+// MAPEO Y → PIXEL CON PADDING
+// -------------------------------------------
+function mapY(value) {
+    const PADDING_TOP = 10;
+    const PADDING_BOTTOM = 20;
+
+    value = Math.max(Y_MIN, Math.min(Y_MAX, value));
+    const pct = (value - Y_MIN) / (Y_MAX - Y_MIN);
+
+    return canvas.height - PADDING_BOTTOM - pct * (canvas.height - PADDING_TOP - PADDING_BOTTOM);
+}
+
+// -------------------------------------------
+// GENERAR PUNTO NUEVO
+// -------------------------------------------
+function getRandomVariation() {
+    if (estado_actual === "Estresado") return Math.random() * 20 - 10;
+    if (estado_actual === "Normal")     return Math.random() * 15 - 5;
+    return Math.random() * 7 - 2;
+}
+
+function generateNextPoint() {
+    let val = activation_real + getRandomVariation();
+    return Math.max(Y_MIN, Math.min(Y_MAX, val));
+}
+
+// -------------------------------------------
+// DIBUJAR EJES CON TEXTO DEL EJE Y SEPARADO
+// -------------------------------------------
+function drawAxes() {
+
+    const PADDING_LEFT = 70;
+    const PADDING_BOTTOM = 20;
+    const PADDING_TOP = 10;
+
+    // EJE Y
+    ctx.strokeStyle = "#777";
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+    ctx.moveTo(PADDING_LEFT, PADDING_TOP);
+    ctx.lineTo(PADDING_LEFT, canvas.height - PADDING_BOTTOM);
+    ctx.stroke();
+
+    // TÍTULO DEL EJE Y — AHORA MÁS A LA IZQUIERDA
+    ctx.save();
+    ctx.fillStyle = "white";
+    ctx.font = "bold 16px Arial";
+
+    ctx.translate(15, canvas.height / 2);     
+    ctx.rotate(-Math.PI / 2);
+
+    ctx.fillText("Nivel de Activación (μS)", -canvas.height / 3 + 15, 0);
+    ctx.restore();
+
+    // TICKS DE 10 EN 10
+    ctx.fillStyle = "white";
+    ctx.font = "13px Arial";
+
+    for (let v = Y_MIN; v <= Y_MAX; v += 10) {
+        const y = mapY(v);
+
+        ctx.fillText(v.toString(), 25, y + 4);    // Muevo números un poco a la derecha
+
+        ctx.strokeStyle = "#333";
+        ctx.beginPath();
+        ctx.moveTo(PADDING_LEFT, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
     }
-    if (interval > 0) {
-        setTimeout(function() { window.location.reload(); }, interval);
-        console.log(`Página configurada para recargar cada ${interval / 1000} segundos.`);
+
+    // EJE X
+    ctx.strokeStyle = "#777";
+    ctx.beginPath();
+    ctx.moveTo(PADDING_LEFT, canvas.height - PADDING_BOTTOM);
+    ctx.lineTo(canvas.width, canvas.height - PADDING_BOTTOM);
+    ctx.stroke();
+}
+
+// -------------------------------------------
+// DIBUJAR LA SEÑAL
+// -------------------------------------------
+function drawSignal() {
+    const PADDING_LEFT = 70;
+
+    ctx.strokeStyle = getEstadoColor(estado_actual);
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    for (let i = 0; i < dataBuffer.length; i++) {
+        const x = PADDING_LEFT + (i / dataBuffer.length) * (canvas.width - PADDING_LEFT);
+        const y = mapY(dataBuffer[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
     }
+    ctx.stroke();
+}
+
+// -------------------------------------------
+// LOOP DE DATOS
+// -------------------------------------------
+setInterval(() => {
+    dataBuffer.push(generateNextPoint());
+    dataBuffer.shift();
+}, 1000 / pointsPerSecond);
+
+// -------------------------------------------
+// RENDER
+// -------------------------------------------
+function render() {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    drawAxes();
+    drawSignal();
+
+    requestAnimationFrame(render);
+}
+render();
+
+// -------------------------------------------
+// TOOLTIP
+// -------------------------------------------
+canvas.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+
+    let index = Math.floor((mouseX / canvas.width) * dataBuffer.length);
+    index = Math.max(0, Math.min(dataBuffer.length - 1, index));
+
+    const value = dataBuffer[index];
+
+    tooltip.style.left = (mouseX + 20) + "px";
+    tooltip.style.top = (e.clientY - rect.top + 10) + "px";
+    tooltip.style.display = "block";
+    tooltip.innerHTML = `
+        <div><strong>${value.toFixed(2)} μS</strong></div>
+        <div>Estado: ${estado_actual}</div>
+    `;
+});
+
+canvas.addEventListener("mouseleave", () => {
+    tooltip.style.display = "none";
+});
+
+// -------------------------------------------
+// AJAX actualización
+// -------------------------------------------
+function actualizarDatos() {
+    fetch(window.location.href, {
+        headers: {"X-Requested-With": "XMLHttpRequest"}
+    })
+    .then(r => r.json())
+    .then(data => {
+
+        activation_real = data.activation;
+        estado_actual = data.estado;
+
+        document.getElementById("estado-texto").textContent = data.estado;
+        document.getElementById("estado-gif").src = "/static/" + data.gif;
+        document.getElementById("activation-actual").textContent =
+            "Activación: " + data.activation;
+        document.getElementById("conductance-actual").textContent =
+            "Conductancia actual: " + data.conductance + " μS";
+    });
+}
+
+setInterval(actualizarDatos, refreshInterval);
 </script>
-{% endblock content %} 
+
+{% endblock %}
