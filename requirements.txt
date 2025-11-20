@@ -20,4 +20,5 @@ tzdata==2025.2
 django-crispy-forms==2.5
 crispy-bootstrap5==0.6
 
-#Corrección ortográfica
+#Subir a render
+gunicorn whitenoise
