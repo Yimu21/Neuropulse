@@ -114,8 +114,6 @@ def resultados_gsr(request):
 def ver_correlacion(request):
     return render(request, "dashboard/ver_correlacion.html") 
 
-def lista_usuarios(request):
-    return render(request, "dashboard/lista_usuarios.html")
 
 def descargar_app(request):
     return render(request, "dashboard/descargar_app.html")
