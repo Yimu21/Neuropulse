@@ -19,7 +19,10 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-vr^jtl^umh3!=9b*rk)&1
 DEBUG = config('DEBUG', default='True', cast=bool) 
 
 # CRÍTICO: Lista de hosts permitidos (Solo dominio, sin https://)
-ALLOWED_HOSTS = ['neuropulse-1.onrender.com', '.onrender.com']
+ALLOWED_HOSTS = [
+    'neuropulse-1.onrender.com', 
+    '.onrender.com'
+]
 
 # -------------------------------------------------------------------
 # 2. APLICACIONES INSTALADAS (SOLO UNA LISTA)
@@ -128,10 +131,7 @@ if os.environ.get('DATABASE_URL'):
     CSRF_COOKIE_SECURE = True
     # 🌟🌟🌟 FIN DE LA CORRECCIÓN 🌟🌟🌟
 
-    # 4. Asegurar ALLOWED_HOSTS
-    RENDER_HOST = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-    if RENDER_HOST:
-        ALLOWED_HOSTS.append(RENDER_HOST)
+    
 
 # -------------------------------------------------------------------
 # 6. CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS PARA WHITENOISE
