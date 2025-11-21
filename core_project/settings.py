@@ -4,7 +4,7 @@ import dj_database_url
 from decouple import config
 from dotenv import load_dotenv 
 
-# CRÍTICO: Carga de variables de entorno al inicio.
+ #CRÍTICO: Carga de variables de entorno al inicio.
 load_dotenv() 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -117,7 +117,9 @@ if os.environ.get('DATABASE_URL'):
     }
     # ⚠️ Desactivar DEBUG y asegurar HOSTS solo en Render:
     DEBUG = False
-    ALLOWED_HOSTS.append(config('RENDER_EXTERNAL_HOSTNAME')) 
+    # ✅ NO AÑADIR EL HOST A LA LISTA, REEMPLAZARLA 
+    # Usamos os.environ.get('RENDER_EXTERNAL_HOSTNAME') si está disponible, sino la URL específica
+    ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'neuropulse-1.onrender.com')] 
 
 # -------------------------------------------------------------------
 # 6. CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS PARA WHITENOISE
@@ -131,4 +133,3 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # ... (El resto del archivo no necesita cambios)
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
