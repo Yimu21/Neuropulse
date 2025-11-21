@@ -4,7 +4,7 @@ import dj_database_url
 from decouple import config
 from dotenv import load_dotenv 
 
- #CRÍTICO: Carga de variables de entorno al inicio.
+# CRÍTICO: Carga de variables de entorno al inicio.
 load_dotenv() 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -106,6 +106,7 @@ DATABASES = {
 
 # 2. LÓGICA DE PRODUCCIÓN: SOBRESESCRIBIR si Render establece DATABASE_URL
 if os.environ.get('DATABASE_URL'):
+    # 2a. Sobrescribir Base de Datos
     DATABASES['default'] = dj_database_url.parse(
         os.environ.get('DATABASE_URL'),
         conn_max_age=600,
@@ -115,11 +116,18 @@ if os.environ.get('DATABASE_URL'):
     DATABASES['default']['OPTIONS'] = {
         'sslmode': 'require',
     }
-    # ⚠️ Desactivar DEBUG y asegurar HOSTS solo en Render:
+    
+    # 2b. Configurar Seguridad
     DEBUG = False
-    # ✅ NO AÑADIR EL HOST A LA LISTA, REEMPLAZARLA 
-    # Usamos os.environ.get('RENDER_EXTERNAL_HOSTNAME') si está disponible, sino la URL específica
-    ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'neuropulse-1.onrender.com')] 
+    # ✅ LÓGICA CORREGIDA: Reemplazar ALLOWED_HOSTS con el host de Render (solo si existe)
+    # Render establece RENDER_EXTERNAL_HOSTNAME. Usamos ese valor para el host permitido.
+    RENDER_HOST = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+    if RENDER_HOST:
+        ALLOWED_HOSTS.append(RENDER_HOST)
+    
+    # Agregar la línea de seguridad proxy SSL
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # -------------------------------------------------------------------
 # 6. CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS PARA WHITENOISE
