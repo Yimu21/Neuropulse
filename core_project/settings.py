@@ -35,15 +35,15 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True' # Leer DEBUG de forma segura
 
 # core_project/settings.py
 
+# core_project/settings.py
+
 ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost',
     
-    # 🌟 CRÍTICO: Añadir el dominio con comodín.
-    '.onrender.com', 
-    
-    # También incluimos el dominio específico por si acaso
-    'neuropulse-1.onrender.com' 
+    # CRÍTICO: Incluir el dominio específico y el comodín de Render.
+    'neuropulse-1.onrender.com',
+    '.onrender.com'  # <--- ¡Esta línea resuelve los problemas de Host Header!
 ]
 # -------------------------------------------------------------------
 # 2. APLICACIONES INSTALADAS (¡CORRECCIÓN DE UBICACIÓN!)
