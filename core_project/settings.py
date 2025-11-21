@@ -35,9 +35,10 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True' # Leer DEBUG de forma segura
 
 ALLOWED_HOSTS = [
     '127.0.0.1', 
-    'localhost', 
-    # 🌟 ¡CRÍTICO! Dominio correcto sin el protocolo 'https://'
-    'neuropulse-1.onrender.com' 
+    'localhost',
+    'neuropulse-1.onrender.com', 
+    # AÑADE ESTO TEMPORALMENTE:
+    '.onrender.com'
 ]
 # -------------------------------------------------------------------
 # 2. APLICACIONES INSTALADAS (¡CORRECCIÓN DE UBICACIÓN!)
