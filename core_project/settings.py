@@ -29,13 +29,14 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True' # Leer DEBUG de forma segura
 # CRÍTICO: El host público de Render sin HTTPS
 # core_project/settings.py
 
+# settings.py
+
 ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost', 
-    # 🛑 CORRECCIÓN: Eliminar el protocolo 'https://'
+    # 🌟 ¡CRÍTICO! Dominio SIN protocolo.
     'neuropulse-1.onrender.com' 
 ]
-
 # -------------------------------------------------------------------
 # 2. APLICACIONES INSTALADAS (¡CORRECCIÓN DE UBICACIÓN!)
 # -------------------------------------------------------------------
