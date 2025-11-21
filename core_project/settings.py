@@ -29,7 +29,7 @@ DEBUG = False
 ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost', 
-    'https://neuropulse-4yci.onrender.com' 
+    'https://neuropulse-1.onrender.com' 
 ]
 
 
