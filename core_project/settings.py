@@ -19,12 +19,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-vr^jtl^umh3!=9b*rk)&1
 DEBUG = config('DEBUG', default='True', cast=bool) 
 
 # CRÍTICO: Lista de hosts permitidos (Solo dominio, sin https://)
-ALLOWED_HOSTS = [
-    '127.0.0.1', 
-    'localhost',
-    'neuropulse-1.onrender.com', # Dominio específico de Render
-    '.onrender.com'             # Comodín para aceptar peticiones de Render
-]
+ALLOWED_HOSTS = ['neuropulse-1.onrender.com', '.onrender.com']
 
 # -------------------------------------------------------------------
 # 2. APLICACIONES INSTALADAS (SOLO UNA LISTA)
@@ -126,8 +121,6 @@ if os.environ.get('DATABASE_URL'):
     
     # 2. Configurar el encabezado de SSL del proxy de Render
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
-    # ... (Asegúrate de que 'neuropulse-1.onrender.com' esté en ALLOWED_HOSTS) ...
     
     # 3. Forzar redirección y seguridad de cookies
     SECURE_SSL_REDIRECT = True
