@@ -31,10 +31,12 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True' # Leer DEBUG de forma segura
 
 # settings.py
 
+# core_project/settings.py
+
 ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost', 
-    # 🌟 ¡CRÍTICO! Dominio SIN protocolo.
+    # 🌟 ¡CRÍTICO! Dominio correcto sin el protocolo 'https://'
     'neuropulse-1.onrender.com' 
 ]
 # -------------------------------------------------------------------
