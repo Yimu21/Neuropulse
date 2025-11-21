@@ -117,17 +117,26 @@ if os.environ.get('DATABASE_URL'):
         'sslmode': 'require',
     }
     
-    # 2b. Configurar Seguridad
-    DEBUG = False
-    # ✅ LÓGICA CORREGIDA: Reemplazar ALLOWED_HOSTS con el host de Render (solo si existe)
-    # Render establece RENDER_EXTERNAL_HOSTNAME. Usamos ese valor para el host permitido.
+    # 2b. Configurar Seguridad AVANZADA (Resuelve 400 Bad Request en Proxies)
+    DEBUG = False # ⬅️ Desactivar DEBUG
+    
+    # 🌟🌟🌟 ESTAS LÍNEAS DEBEN RESOLVER EL ERROR 400 BAD REQUEST 🌟🌟🌟
+    # 1. Confiar en la cabecera de host del proxy (CRÍTICO)
+    USE_X_FORWARDED_HOST = True
+    
+    # 2. Configurar el encabezado de SSL del proxy de Render
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # 3. Forzar redirección y seguridad de cookies
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    # 🌟🌟🌟 FIN DE LA CORRECCIÓN 🌟🌟🌟
+
+    # 4. Asegurar ALLOWED_HOSTS
     RENDER_HOST = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
     if RENDER_HOST:
         ALLOWED_HOSTS.append(RENDER_HOST)
-    
-    # Agregar la línea de seguridad proxy SSL
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
 
 # -------------------------------------------------------------------
 # 6. CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS PARA WHITENOISE
