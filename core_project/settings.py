@@ -33,12 +33,17 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True' # Leer DEBUG de forma segura
 
 # core_project/settings.py
 
+# core_project/settings.py
+
 ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost',
-    'neuropulse-1.onrender.com', 
-    # AÑADE ESTO TEMPORALMENTE:
-    '.onrender.com'
+    
+    # 🌟 CRÍTICO: Añadir el dominio con comodín.
+    '.onrender.com', 
+    
+    # También incluimos el dominio específico por si acaso
+    'neuropulse-1.onrender.com' 
 ]
 # -------------------------------------------------------------------
 # 2. APLICACIONES INSTALADAS (¡CORRECCIÓN DE UBICACIÓN!)
