@@ -127,6 +127,8 @@ if os.environ.get('DATABASE_URL'):
     # 2. Configurar el encabezado de SSL del proxy de Render
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     
+    # ... (Asegúrate de que 'neuropulse-1.onrender.com' esté en ALLOWED_HOSTS) ...
+    
     # 3. Forzar redirección y seguridad de cookies
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
