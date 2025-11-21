@@ -1,24 +1,22 @@
 asgiref==3.10.0
+crispy-bootstrap5==0.6
+dj-database-url==3.0.1
 Django==4.2.8
+django-crispy-forms==2.5
 djangorestframework==3.14.0
 dotenv==0.9.9
+gunicorn==23.0.0
 numpy==2.3.4
 packaging==25.0
 pandas==2.3.3
 plotly==5.18.0
-
 psycopg2-binary==2.9.11
 python-dateutil==2.9.0.post0
+python-decouple==3.8
 python-dotenv==1.2.1
 pytz==2025.2
 six==1.17.0
 sqlparse==0.5.3
 tenacity==9.1.2
 tzdata==2025.2
-
-# Diseño / Frontend
-django-crispy-forms==2.5
-crispy-bootstrap5==0.6
-
-#Subir a render
-gunicorn whitenoise
+whitenoise==6.11.0

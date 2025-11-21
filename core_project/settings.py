@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,9 +24,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-vr^jtl^umh3!=9b*rk)&1erydyyh#!ppu_hji#dcidf)=gfvkv'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1', 
+    'localhost', 
+    'https://neuropulse-4yci.onrender.com' 
+]
 
 
 # Application definition
@@ -41,6 +46,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # 🌟 AÑADE WHITENOISE AQUÍ 🌟
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -72,6 +79,7 @@ WSGI_APPLICATION = 'core_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 import os
+import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -83,8 +91,28 @@ DATABASES = {
         'PASSWORD': os.getenv("SUPABASE_PASSWORD"),
         'HOST': os.getenv("SUPABASE_HOST"),
         'PORT': os.getenv("SUPABASE_PORT", "5432"),
-    }
+        }
 }
+
+ 
+
+
+# 🌟 CONFIGURACIÓN DE PRODUCCIÓN PARA RENDER (Supabase) 🌟
+# Intenta leer la variable de entorno DATABASE_URL que Render establece.
+if os.environ.get('DATABASE_URL'):
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    
+    DATABASES['default'] = dj_database_url.parse(
+        DATABASE_URL,
+        conn_max_age=600,
+        conn_health_check=True,
+    )
+    
+    # 🚨 CRÍTICO: Forzar SSL para Render/Supabase
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require',
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -121,8 +149,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = []
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'dashboard/static'),
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -141,3 +171,4 @@ INSTALLED_APPS = [
     'dashboard', 
     # ------------------------------------
 ]
+
