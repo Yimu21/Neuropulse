@@ -1,36 +1,40 @@
 from django.db import models
-from django.contrib.auth.models import User
-
-# Create your models here.
-
 
 class RegistroFisiologico(models.Model):
     """
-    Modelo para simular la estructura de los registros de datos fisiológicos
-    (GSR y Pulso) de NeuroPulse.
+    Modelo que mapea la tabla existente 'usuarios' en Supabase.
+    NOTA: no se hacen migraciones ya que solo serán para leer
     """
-    # En un entorno real, usarías la clave foránea del usuario autenticado
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='registros')
-    
-    # Campo para registrar la fecha y hora de la medición
-    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Fecha y Hora")
-    
-    # Respuesta Galvánica de la Piel (GSR) - Medida de estrés
-    # El valor GSR suele ser un valor de conductancia o una señal cruda (aquí simulado)
-    valor_gsr = models.IntegerField(verbose_name="Valor GSR (Estrés)")
-    
-    # Frecuencia Cardíaca (BPM) - Pulso
-    valor_bpm = models.IntegerField(verbose_name="Valor BPM (Pulso)")
+    id = models.AutoField(primary_key=True, db_column='id')
+    creado_en = models.DateTimeField(db_column='creado_en')
+    activation_level = models.FloatField(null=True, blank=True, db_column='activation_level')
+    bpm = models.FloatField(null=True, blank=True, db_column='bpm')
+    conductance_us = models.FloatField(null=True, blank=True, db_column='conductance_us')
+    gsr_value = models.FloatField(null=True, blank=True, db_column='gsr_value')
 
     class Meta:
+        db_table = 'usuarios'  # nombre EXACTO en Supabase
+        managed = False
+        ordering = ['-creado_en']
         verbose_name = "Registro Fisiológico"
         verbose_name_plural = "Registros Fisiológicos"
-        # Ordenamos los registros por fecha y hora descendente por defecto
-        ordering = ['-timestamp']
 
     def __str__(self):
-        return f"Registro de {self.usuario.username} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+        return f"Registro {self.id} - {self.creado_en} - BPM:{self.bpm}"
 
-# NOTA: Después de crear o modificar modelos, debes ejecutar:
-# python manage.py makemigrations dashboard
-# python manage.py migrate
+
+class ActivacionSistema(models.Model):
+    """
+    Modelo que mapea la tabla existente 'activacion_sistema' en Supabase.
+    """
+    id = models.AutoField(primary_key=True, db_column='id')
+    activation = models.BooleanField(default=False, db_column='activation')
+
+    class Meta:
+        db_table = 'activacion_sistema'
+        managed = False
+        verbose_name = "Activación del Sistema"
+        verbose_name_plural = "Activaciónes del Sistema"
+
+    def __str__(self):
+        return f"Activación: {'Activo' if self.activation else 'Inactivo'}"
