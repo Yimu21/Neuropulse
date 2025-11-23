@@ -1,41 +1,126 @@
 {% extends "dashboard/base.html" %}
-
 {% block content %}
-       
-<div class="container my-5">
-    <div class="row">
-        <div class="col-12 text-center">
-            <h1 class="mb-4">Análisis de Correlación (GSR vs. Pulso)</h1>
-            <p class="lead">Muestra la relación directa entre el nivel de estrés y la frecuencia cardíaca.</p>
-        </div>
-    </div>
 
-    <!-- Indicador de Correlación -->
-    <div class="row mb-5 text-center">
-        <div class="col-12">
-            <div class="card shadow-sm border-info">
-                <div class="card-body">
-                    <h5 class="card-title text-info">Coeficiente de Correlación (r)</h5>
-                    <p class="card-text fs-1 fw-bold">{{ correlacion_valor }}</p>
-                    <small class="text-muted">Un valor cercano a 1 indica una correlación fuerte positiva (más estrés = más pulso).</small>
-                </div>
-            </div>
-        </div>
-    </div>
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis de Correlación (GSR vs. Pulso) - Neuropulse</title>
+ <link rel="stylesheet" href="{% static 'css/estilos_correlacion.css' %}">
+ 
 
-    <!-- Contenedor del Gráfico de Plotly (Scatter Plot) -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-body p-1">
-                    <!-- Plotly se inserta aquí. Es crucial usar 'safe' para permitir el HTML de Plotly -->
-                    {{ correlation_graph|safe }}
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <p class="mt-4 text-center text-muted"><small>Cada punto representa una medición. El color indica el momento en que se tomó el dato (más oscuro, más reciente).</small></p>
+ <style>
+ /* Estilos básicos para la plantilla de correlación */
+ :root {
+--color-principal: #6c5ce7;
+ --color-fondo: #D4E0E9; /* Azul claro */
+ --color-texto: #333;
+ --color-tarjeta: #ffffff;
+ --color-fuerte-pos: #2ecc71; /* Verde */
+ --color-debil: #f1c40f; /* Amarillo */
+ --color-fuerte-neg: #e74c3c; /* Rojo */
+ }
+body {
+font-family: 'Arial', sans-serif;
+background-color: var(--color-fondo); 
+ color: var(--color-texto);
+ margin: 0;
+ padding: 20px;
+ }
+.container {
+max-width: 800px;
+margin: 40px auto;
+ padding: 20px;
+background-color: var(--color-tarjeta); 
+border-radius: 12px;
+box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+color: var(--color-principal);
+ text-align: center;
+margin-bottom: 5px;
+font-size: 2em;
+}
+.titulo-seccion p {
+text-align: center;
+ margin-bottom: 30px;
+color: #777;
+}
+/* --- Resultado del Coeficiente r --- */
+.resultado-correlacion {
+text-align: center;
+margin-bottom: 40px;
+}
+.tarjeta-resultado {
+border-radius: 8px;
+padding: 30px 20px;
+border: 2px solid var(--color-principal);
+transition: all 0.3s;
+}
+.valor-r {
+display: block;
+font-size: 4em;
+ font-weight: 700;
+margin-bottom: 15px;
+/* El color se establecerá dinámicamente con las clases */
+ }
+  /* Clases dinámicas basadas en la vista de Django */
+.tarjeta-resultado.fuerte-pos .valor-r { color: var(--color-fuerte-pos); }
+ .tarjeta-resultado.moderada-pos .valor-r { color: #5cb85c; }
+ .tarjeta-resultado.debil .valor-r { color: var(--color-debil); }
+ .tarjeta-resultado.fuerte-neg .valor-r { color: var(--color-fuerte-neg); }
+.tarjeta-resultado.moderada-neg .valor-r { color: #e57373; }
+.tarjeta-resultado.sin-datos .valor-r { color: #999; }
+ #interpretacion {
+font-size: 1.1em;
+color: var(--color-texto);
+line-height: 1.5; 
+}
+.nota-datos {
+margin-top: 30px;
+padding-top: 15px;
+border-top: 1px solid #eee;
+font-size: 0.9em;
+ color: #555;
+display: flex;
+justify-content: space-around;
+}
+
+ .nota-datos span {
+font-weight: bold;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<section class="titulo-seccion">
+<h1>Análisis de Correlación (GSR vs. Pulso)</h1>
+<p>Muestra la relación entre el nivel de estrés y la frecuencia cardíaca, calculado sobre los últimos 50 registros.</p>
+ </section>
+<section class="resultado-correlacion">
+<h2>Coeficiente de Correlación (r)</h2> 
+
+<div class="tarjeta-resultado {{ correlacion_clase }}">
+
+<span id="valor-r" class="valor-r">{{ coeficiente_r }}</span> 
+
+<p id="interpretacion">
+El coeficiente r = **{{ coeficiente_r }}** indica una **correlación débil o nula**. No hay relación lineal significativa.
+ </p>
+ </div>
+
+<div class="nota-datos">
+<div>Última Activación (GSR): <span>{{ ultimo_gsr }} microSiemens</span></div>
+<div>Último Pulso (BPM): <span>{{ ultimo_pulso }} BPM</span></div>
+</div>
+</section>
 
 </div>
-{% endblock content %}
+
+</body>
+</html>
+{% endblock %}

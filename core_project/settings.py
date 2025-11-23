@@ -21,7 +21,11 @@ DEBUG = config('DEBUG', default='True', cast=bool)
 # CRÍTICO: Lista de hosts permitidos (Solo dominio, sin https://)
 ALLOWED_HOSTS = [
     'neuropulse-1.onrender.com', 
-    '.onrender.com'
+    '.onrender.com',
+    # 🌟🌟🌟 CORRECCIÓN CRÍTICA PARA DESARROLLO LOCAL 🌟🌟🌟
+    '127.0.0.1',  # Permite acceso a localhost usando la IP
+    'localhost',  # Permite acceso a localhost usando el nombre
+    # 🌟🌟🌟 FIN DE LA CORRECCIÓN 🌟🌟🌟
 ]
 
 # -------------------------------------------------------------------
@@ -83,28 +87,29 @@ WSGI_APPLICATION = 'core_project.wsgi.application'
 
 
 # -------------------------------------------------------------------
-# 5. CONFIGURACIÓN DE BASE DE DATOS (POSTGRESQL / SUPABASE)
+# 5. CONFIGURACIÓN DE BASE DE DATOS (POSTGRESQL / SUPABASE FORZADO)
 # -------------------------------------------------------------------
 
-# 1. Configuración Base (Usando variables locales para desarrollo)
+# 🌟🌟🌟 MODO DE CONEXIÓN FORZADA A SUPABASE/POSTGRESQL 🌟🌟🌟
 DATABASES = {
     'default': {
-        # Usamos PostgreSQL local como default para desarrollo
         'ENGINE': 'django.db.backends.postgresql', 
         'NAME': config("SUPABASE_DBNAME"),
         'USER': config("SUPABASE_USER"),
         'PASSWORD': config("SUPABASE_PASSWORD"),
+        # Usa el Pooler de Supabase del .env
         'HOST': config("SUPABASE_HOST"),
         'PORT': config("SUPABASE_PORT", default='5432'),
         'OPTIONS': {
-            'sslmode': 'require', # Es necesario para Supabase
+            'sslmode': 'require', # Necesario para Supabase
         }
     }
 }
 
+
 # 2. LÓGICA DE PRODUCCIÓN: SOBRESESCRIBIR si Render establece DATABASE_URL
 if os.environ.get('DATABASE_URL'):
-    # 2a. Sobrescribir Base de Datos
+    # 2a. Sobrescribir Base de Datos (prioridad máxima)
     DATABASES['default'] = dj_database_url.parse(
         os.environ.get('DATABASE_URL'),
         conn_max_age=600,
@@ -116,20 +121,12 @@ if os.environ.get('DATABASE_URL'):
     }
     
     # 2b. Configurar Seguridad AVANZADA (Resuelve 400 Bad Request en Proxies)
-    DEBUG = False # ⬅️ Desactivar DEBUG
-    
-    # 🌟🌟🌟 ESTAS LÍNEAS DEBEN RESOLVER EL ERROR 400 BAD REQUEST 🌟🌟🌟
-    # 1. Confiar en la cabecera de host del proxy (CRÍTICO)
+    DEBUG = False 
     USE_X_FORWARDED_HOST = True
-    
-    # 2. Configurar el encabezado de SSL del proxy de Render
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    
-    # 3. Forzar redirección y seguridad de cookies
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    # 🌟🌟🌟 FIN DE LA CORRECCIÓN 🌟🌟🌟
 
     
 
@@ -145,3 +142,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # ... (El resto del archivo no necesita cambios)
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# 7. CRISPY FORMS (Añadido: Asume que usas Bootstrap 5)
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
