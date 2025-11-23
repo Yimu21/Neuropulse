@@ -1,8 +1,33 @@
 {% extends "dashboard/base.html" %}
+{% load static %}
 
 {% block content %}
-    <h1>Análisis de Nivel de Estrés (GSR)</h1>
-    <p>Aquí se cargará el gráfico de conductancia de la piel con Plotly y los datos analizados por Pandas.</p>
-    {% endblock content %}
+    <div class="container mt-5 text-center">
+        <h1 class="display-4 mb-4 text-primary">Descargar Aplicación Móvil Neuropulse</h1>
+        <p class="lead">
+            Obtén la aplicación de monitoreo en tiempo real para tu dispositivo Android.
+        </p>
 
-    
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow p-4 mt-4">
+                    <h3 class="mb-3">Descarga Directa (APK)</h3>
+                    
+                    <p>
+                        Este archivo es necesario para conectar el guante inteligente a tu m vil.
+                        Aseg rate de tener habilitada la instalaci n de aplicaciones de fuentes desconocidas en la configuraci n de tu tel fono.
+                    </p>
+
+                    <!-- 🌟 ENLACE CRÍTICO DE DESCARGA 🌟 -->
+                    <a href="{% static 'dashboard/app-debug.apk' %}" 
+                       download="Neuropulse_v1.0.apk"
+                       class="btn btn-primary btn-lg mt-3 w-100">
+                        ⬇️ Descargar Neuropulse APK (Versi n 1.0)
+                    </a>
+                    
+                    <small class="text-muted mt-3">Tama o del archivo: [Aproximadamente 40 MB]</small>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
