@@ -1,3 +1,4 @@
+<!-- Plantilla base de Django: Define la estructura, el menú y los estilos principales. -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,61 +6,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> 
     <title>{% block title %}Neuropulse - Monitoreo Inteligente{% endblock %}</title>
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- ENLACE DE BOOTSTRAP CSS: CRÍTICO para el diseño. 
+         Se elimina el atributo 'integrity' para asegurar la carga en Render. -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 
     <style>
         /* =======================================================
            1. ESTILOS GENERALES DEL CUERPO (FONDO Y FUENTE BASE)
            ======================================================= */
         body { 
-            background-color: #b6cde2; /* CAMBIAR FONDO: Gris muy claro (profesional) */
-            padding-top: 56px; /* Deja espacio fijo para la barra de navegación de Bootstrap */
+            /* Fondo claro azulado, consistente con el diseño. */
+            background-color: #b6cde2; 
+            /* Deja espacio para el Navbar fijo */
+            padding-top: 56px; 
+            margin: 0;
             
-            /* --- AJUSTES DE FUENTE GENERALES --- */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana; /* TIPO DE LETRA */
-            color: #050505da; /* COLOR DE TEXTO BASE: Gris oscuro */
+            /* Fuente base */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            /* Color de texto base (negro suave) */
+            color: #050505da; 
         }
         
+        /* Asegura que el contenido principal no se pegue a los bordes */
         .content { 
             padding: 20px; 
             max-width: 1200px; 
             margin: 0 auto; 
         }
 
+        /* 🌟 NUEVO ESTILO PARA EL LOGO DENTRO DEL MENÚ 🌟 */
+        .navbar-brand img {
+            height: 28px; /* Ajusta el tamaño del logo */
+            margin-right: 8px; /* Espacio entre el logo y el texto */
+            /* filter: invert(1); Para logos negros en navbars oscuras */
+        }
+
         /* =======================================================
            2. AJUSTES DEL MENÚ (Navbar)
            ======================================================= */
         
-        /* Asegura que los enlaces del menú sean BLANCOS para contrastar con el 'bg-dark' */
+        /* Asegura el color blanco para los enlaces sobre fondo oscuro */
         .navbar .nav-link {
-            color: #FFFFFF !important; /* COLOR DE LETRA DEL MENÚ: Blanco puro */
+            color: #FFFFFF !important;
             font-weight: 500;
             transition: color 0.3s ease;
         }
 
-        /* Efecto al pasar el mouse */
+        /* Color de los enlaces al pasar el mouse */
         .navbar .nav-link:hover {
-            color: #FFC107 !important; /* COLOR HOVER: Amarillo brillante */
+            color: #FFC107 !important; /* Amarillo brillante para el hover */
         }
         
         /* Estilo para los títulos */
         h1, h2, h3 {
-            color: #010101; /* COLOR DE TÍTULOS: Negro para destacar */
+            color: #010101; /* Negro para títulos */
         }
         
     </style>
 </head>
 <body>
+    <!-- 🧭 MENÚ DE NAVEGACIÓN (Navbar de Bootstrap) -->
+    <!-- CRÍTICO: Debemos cargar la etiqueta estática para usar el logo -->
+    {% load static %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'home' %}">Neuropulse 🧠</a>
+            <!-- 🌟 CORRECCIÓN AQUÍ: Se añade el tag <img> 🌟 -->
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'dashboard/logo2.jpg' %}" 
+                     alt="Logo Neuropulse" 
+                     class="d-inline-block align-text-top">
+                Neuropulse 
+            </a>
             
+            <!-- Botón de hamburguesa para móviles -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <!-- Links de Resultados -->
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'resultados_gsr' %}">Nivel de Estrés (GSR)</a>
                     </li>
@@ -79,11 +105,14 @@
         </div>
     </nav>
 
+    <!-- Contenido Específico de Cada Página (Punto de Inserción) -->
     <div class="content">
         {% block content %}
+        <!-- El contenido de home.html, resultados_gsr.html, etc., se inyecta aquí. -->
         {% endblock %}
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- SCRIPT DE BOOTSTRAP JS: Necesario para que el menú responsive funcione. -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>

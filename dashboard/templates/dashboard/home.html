@@ -1,27 +1,52 @@
 {% extends "dashboard/base.html" %}
-{% load static %} {# Carga la etiqueta 'static' para usarla #}
+{% load static %}
+
 {% block content %}
     <div class="container mt-5">
         <div class="row align-items-center">
+            
+            <!-- Columna de Texto -->
             <div class="col-md-7">
-                <h3 class="display-4 mb-4">Bienvenido a <span class="text-primary">Neuropulse</span> 🧠🧤</h3>
+                <h1 class="display-4 mb-4 text-primary">Bienvenido a Neuropulse </h1>
                 <p class="lead">
-                    Esta plataforma es el centro de análisis de datos para el **Guante Inteligente Neuropulse**. Diseñado para el monitoreo fisiológico continuo del usuario, recopila métricas clave para evaluar el nivel de estrés y el estado de salud general.
+                    Esta plataforma es el centro de análisis de datos para el <strong>Guante Inteligente Neuropulse</strong>. Diseñado para el monitoreo fisiológico continuo del usuario, recopila métricas clave para evaluar el nivel de estrés y el estado de salud general.
                 </p>
+
+                <h2>Objetivo del Proyecto:</h2>
                 <p>
-                    Neuropulse combina un microcontrolador ESP32 con sensores de Respuesta Galvánica de la Piel (GSR) y Ritmo Cardíaco (Pulso). Toda la información se transmite vía Wi-Fi para un almacenamiento seguro y análisis detallado en esta interfaz web impulsada por Django y Supabase.
+                    Neuropulse combina un microcontrolador ESP32 con sensores de Respuesta Galvánica de la Piel (GSR) y un sensor de Pulso para capturar:
                 </p>
+                <ul>
+                    <li><strong>Nivel de Estrés (GSR):</strong> Un indicador objetivo de la actividad del sistema nervioso simpático.</li>
+                    <li><strong>Ritmo Cardíaco (BPM):</strong> La frecuencia de los latidos del corazón.</li>
+                </ul>
+
+                <p>
+                    Toda la información se transmite vía Wi-Fi para un almacenamiento seguro y análisis detallado en esta interfaz web impulsada por Django y Supabase.
+                </p>
+                
                 <hr class="my-4">
+                
                 <h3>¿Cómo Navegar?</h3>
                 <p>
                     Utilice la barra de navegación superior para acceder a los gráficos interactivos de nivel de estrés (GSR) y ritmo cardíaco, visualizar la correlación entre ambos, o revisar los registros históricos de los usuarios. También puede descargar nuestra aplicación móvil.
                 </p>
-                <a href="{% url 'descargar_app' %}" class="btn btn-primary btn-lg mt-3">Descargar Aplicación</a>
+                
             </div>
+            
+            <!-- Columna de Imágenes -->
             <div class="col-md-5 text-center">
-                {# Asegúrate de que la ruta de la imagen sea correcta #}
-                <img src="{% static 'dashboard/imagen1.jpeg' %}" alt="Guante Inteligente Neuropulse" class="img-fluid rounded shadow-lg">
-                <small class="d-block mt-2 text-muted">El futuro del monitoreo personal.</small>
+                <div class="row">
+                    
+                    <!-- IMAGEN 1: LOGO PRINCIPAL -->
+                    <div class="col-12 mb-4">
+                        <img src="{% static 'dashboard/imagen1.jpeg' %}" 
+                             alt="Guante Inteligente Neuropulse" 
+                             class="img-fluid rounded shadow-lg">
+                        <small class="d-block mt-2 text-muted">El futuro del monitoreo personal.</small>
+                    </div>
+
+                    
             </div>
         </div>
     </div>
