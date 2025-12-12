@@ -2,6 +2,7 @@
 isa/
 venv/
 .venv/
+.Neuropulse_app/
 .desarrollo_web/
 
 # Ignorar archivos específicos de Python y Django
